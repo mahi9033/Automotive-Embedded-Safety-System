@@ -14,7 +14,7 @@ void seatbelt_gpio_init(void)
 
 	/* Pull Down the Pin */
 	GPIOA->PUPDR |=  (1U << 1);
-	GPIOA->PUPDR &= ~(1U << 1);
+	GPIOA->PUPDR &= ~(1U << 0);
 
 }
 

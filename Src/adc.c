@@ -27,8 +27,7 @@ volatile uint16_t mq3_value = 0;
 	 GPIOA->MODER |= (1U << 15);
 
 	 /* Set Input For MQ3 activation */
-	 GPIOA->MODER &= ~(1U << 8);
-	 GPIOA->MODER &= ~(1U << 8);
+	 GPIOA->MODER &= ~(1U << 9);
 
 
 
@@ -50,10 +49,7 @@ volatile uint16_t mq3_value = 0;
 	 ADC1->SQR3 &= ~(1U << 3);
 
            /*CH7*/
-	 ADC1->SQR3 |=  (1U << 4);
-	 ADC1->SQR3 |=  (1U << 5);
-	 ADC1->SQR3 |=  (1U << 6);
-	 ADC1->SQR3 &= ~(1U << 7);
+	 ADC1->SQR3 |= (7U << 5);
 
 	 /* SET 12 bit Resolution */
 	 ADC1->CR1 &= ~(1U << 24);
@@ -65,6 +61,10 @@ volatile uint16_t mq3_value = 0;
 	 /* ENBLE EOCS FOR CONVERSION SELECTION */
 	 ADC1->CR2 |=CR2_EOCS;
 
+	 ADC1->SMPR2 |= (7U << 9) | (7U << 21);
+	 /* enable scan mode */
+	 ADC1->CR1 |= (1U << 8);
+
 	 /* Enable adc */
 	 ADC1->CR2 |= (1 << 0);
 
@@ -75,7 +75,9 @@ volatile uint16_t mq3_value = 0;
 
  void adc_start_conv(void)
  {
-	 ADC1->CR2 |= ADC_CR2_SWSTART;
+     adc_idx  = 0;
+     adc_done = 0;
+     ADC1->CR2 |= ADC_CR2_SWSTART;
  }
 
 
@@ -84,7 +86,7 @@ volatile uint16_t mq3_value = 0;
 
 if(GPIOA->IDR & (1U << 4))
 {
-	if(!(ADC1->SR & SR_EOC)){}
+	if((ADC1->SR & SR_EOC)){
 
 	uint16_t value = (uint16_t)ADC1->DR;
 	if(adc_idx == 0)
@@ -98,19 +100,11 @@ if(GPIOA->IDR & (1U << 4))
 		adc_idx = 0;
 		adc_done = 1;
 	}
-}
-	else
-	{
-		if(!(ADC1->SR & SR_EOC)){};
-
-		uint16_t value = (uint16_t)ADC1->DR;
-		if(adc_idx == 0)
-		{
-			lm35_value = value;
-			adc_idx = 1;
-		}
-	}
+  }
  }
+}
+
+
 
 
 
